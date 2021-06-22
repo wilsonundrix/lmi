@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MpesaController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,3 +21,8 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+
+Route::get('/pay', function () {return view('mpesa.pay');});
+Route::get('/confirm', function () {return view('mpesa.confirm');});
+
+Route::post('/confirm',[MpesaController::class,'confirm'])->name('confirm_pay');

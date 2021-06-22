@@ -15,6 +15,17 @@ class CreateStkPushesTable extends Migration
     {
         Schema::create('stk_pushes', function (Blueprint $table) {
             $table->id();
+            $table->string('merchantRequestID')->nullable();
+            $table->string('checkoutRequestID')->nullable();
+            $table->string('requestCode')->nullable();
+            $table->string('requestDesc')->nullable();
+            $table->string('mpesaReceiptNumber')->nullable();
+            $table->string('pesa')->nullable();
+            $table->string('b2cUtilityAccountAvailableFunds')->nullable();
+            $table->string('amount')->nullable();
+            $table->string('balance')->nullable();
+            $table->string('transactionDate')->nullable();
+            $table->string('phoneNumber')->nullable();
             $table->timestamps();
         });
     }
