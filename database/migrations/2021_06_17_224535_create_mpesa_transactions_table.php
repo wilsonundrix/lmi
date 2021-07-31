@@ -14,7 +14,7 @@ class CreateMpesaTransactionsTable extends Migration
     public function up()
     {
         Schema::create('mpesa_transactions', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('FirstName')->nullable();
             $table->string('MiddleName')->nullable();
             $table->string('LastName')->nullable();
@@ -28,8 +28,7 @@ class CreateMpesaTransactionsTable extends Migration
             $table->string('MSISDN')->nullable();
             $table->decimal('TransAmount', 8, 2)->nullable();
             $table->decimal('OrgAccountBalance', 8, 2)->nullable();
-            $table->string('response')->default('pay')->nullable();
-            $table->string('status')->default('pending')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }

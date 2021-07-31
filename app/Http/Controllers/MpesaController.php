@@ -42,27 +42,7 @@ class MpesaController extends Controller
         return $json_response->access_token;
     }
 
-    public function registerURLs()
-    {
-        $url = "https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl";
 
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type:application/json", "Authorization: Bearer " . $this->newAccessToken()));
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode(array(
-            'ShortCode' => 174379,
-            'ResponseType' => 'Completed',
-            'ConfirmationURL' => 'https://05bbf15da647.ngrok.io/api/transaction/confirmation',
-            'ValidationURL' => 'https://05bbf15da647.ngrok.io/api/transaction/validation'
-        )));
-
-        $curl_response = curl_exec($curl);
-        curl_close($curl);
-        return $curl_response;
-    }
 
     public function stkPush(Request $request)
     {
@@ -83,7 +63,8 @@ class MpesaController extends Controller
             'PartyA' => $phoneNumber,
             'PartyB' => 174379,
             'PhoneNumber' => $phoneNumber,
-            'CallBackURL' => "https://05bbf15da647.ngrok.io/stk/push/callback/url",              //api/stk/push/callback/url
+//            'CallBackURL' => "https://modernwheels.co.ke/dollar/stk/",              //api/stk/push/callback/url
+            'CallBackURL' => route('mpesa-res'),              //api/stk/push/callback/url
             'AccountReference' => 'Ndunya Payment',
             'TransactionDesc' => 'lollipop'
         ];
@@ -100,13 +81,14 @@ class MpesaController extends Controller
         $curl_response = curl_exec($curl);
 
         return $curl_response;
+        // return redirect()->route('mpesa-res');
     }
 
 
     public function mpesaRes()
     {
         echo "haha";
-        $callBackJSONData = file_get_contents('php://input');
+        $callBackJSONData = file_get_contents("php://input");
 
         $logFile = "STKPush.json";
         $log = fopen($logFile, "a");
@@ -152,67 +134,4 @@ class MpesaController extends Controller
         }
 
     }
-
-    public function STKPushQuery(Request $request)
-    {
-        $checkoutRequestID = $request->get('checkoutRequestID');
-        $businessShortCode = $request->get('businessShortCode');
-        $password = $request->get('password');
-        $timestamp = $request->get('timestamp');
-
-
-        $url = 'https://sandbox.safaricom.co.ke/mpesa/stkpushquery/v1/query';
-
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization:Bearer ' . $this->newAccessToken()));
-
-
-        $curl_post_data = array(
-            'BusinessShortCode' => $businessShortCode,
-            'Password' => $password,
-            'Timestamp' => $timestamp,
-            'CheckoutRequestID' => $checkoutRequestID
-        );
-
-        $data_string = json_encode($curl_post_data);
-
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
-        curl_setopt($curl, CURLOPT_HEADER, false);
-
-        $curl_response = curl_exec($curl);
-
-        return $curl_response;
-    }
-
-    
-    /**
-     * J-son Response to M-pesa API feedback - Success or Failure
-     */
-    public function createValidationResponse($result_code, $result_description): Response
-    {
-        $result = json_encode(["ResultCode" => $result_code, "ResultDesc" => $result_description]);
-        $callBackData = new Response();
-        $callBackData->headers->set("Content-Type", "application/json; charset=utf-8");
-        $callBackData->setContent($result);
-        return $callBackData;
-    }
-
-    /**
-     *  M-pesa Validation Method
-     * Safaricom will only call your validation if you have requested by writing an official letter to them
-     */
-    public function mpesaValidation(Request $request): Response
-    {
-        $result_code = "0";
-        $result_description = "Accepted validation request.";
-        return $this->createValidationResponse($result_code, $result_description);
-    }
-
-    /**
-     * M-pesa Transaction confirmation method, we save the transaction in our databases
-     */
-
 }

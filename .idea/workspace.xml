@@ -2,23 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fd058e26-6e54-4dec-9f6a-8f658d97c273" name="Default Changelist" comment="walk">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/Http/Controllers/MpesaController.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/Models/MpesaTransaction.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/app/Models/StkPush.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/config/sweetalert.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/database/migrations/2021_06_17_224535_create_mpesa_transactions_table.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/database/migrations/2021_06_19_125525_create_stk_pushes_table.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/public/STKPush.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/public/css/bt4.css" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/public/vendor/sweetalert/sweetalert.all.js" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/mpesa/confirm.blade.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/vendor/sweetalert/alert.blade.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/storage/debugbar/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/LaraTailVue.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/LaravelMpesaIntegration.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/layouts/app.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/layouts/app.blade.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/mpesa/coonfirm.blade.php" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/resources/views/mpesa/pay.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/mpesa/pay.blade.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/app/Http/Controllers/DollarController.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/public/sasa.php" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/resources/views/wake/dad.blade.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/MpesaController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/MpesaController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migrations/2021_06_17_224535_create_mpesa_transactions_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2021_06_17_224535_create_mpesa_transactions_table.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/STKPush.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/api.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/api.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
     </list>
@@ -211,6 +201,8 @@
       <workItem from="1623972451179" duration="16104000" />
       <workItem from="1624087683300" duration="16863000" />
       <workItem from="1624278734595" duration="4023000" />
+      <workItem from="1626546393235" duration="4611000" />
+      <workItem from="1627728406591" duration="7396000" />
     </task>
     <task id="LOCAL-00001" summary="walk">
       <created>1623972623220</created>
