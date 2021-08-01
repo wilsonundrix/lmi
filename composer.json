@@ -17,7 +17,8 @@
         "laravel/ui": "^3.2",
         "realrashid/sweet-alert": "^3.2",
       "ext-curl": "*",
-        "ext-json": "*"
+        "ext-json": "*",
+      "ext-mysqli": "*"
     },
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.5",

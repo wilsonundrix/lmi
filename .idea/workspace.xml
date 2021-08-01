@@ -2,14 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fd058e26-6e54-4dec-9f6a-8f658d97c273" name="Default Changelist" comment="walk">
-      <change afterPath="$PROJECT_DIR$/app/Http/Controllers/DollarController.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/public/sasa.php" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/views/wake/dad.blade.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/DollarController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/DollarController.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/Http/Controllers/MpesaController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/MpesaController.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/database/migrations/2021_06_17_224535_create_mpesa_transactions_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2021_06_17_224535_create_mpesa_transactions_table.php" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/public/STKPush.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/routes/api.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/api.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/composer.json" beforeDir="false" afterPath="$PROJECT_DIR$/composer.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/config/app.php" beforeDir="false" afterPath="$PROJECT_DIR$/config/app.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/database/migrations/2021_06_19_125525_create_stk_pushes_table.php" beforeDir="false" afterPath="$PROJECT_DIR$/database/migrations/2021_06_19_125525_create_stk_pushes_table.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/public/sasa.php" beforeDir="false" afterPath="$PROJECT_DIR$/public/sasa.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/resources/views/mpesa/confirm.blade.php" beforeDir="false" afterPath="$PROJECT_DIR$/resources/views/mpesa/confirm.blade.php" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/routes/web.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/web.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -202,7 +202,9 @@
       <workItem from="1624087683300" duration="16863000" />
       <workItem from="1624278734595" duration="4023000" />
       <workItem from="1626546393235" duration="4611000" />
-      <workItem from="1627728406591" duration="7396000" />
+      <workItem from="1627728406591" duration="8774000" />
+      <workItem from="1627747892229" duration="1765000" />
+      <workItem from="1627761218094" duration="10789000" />
     </task>
     <task id="LOCAL-00001" summary="walk">
       <created>1623972623220</created>

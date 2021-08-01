@@ -9,12 +9,14 @@
                         {{ __('Confirm Payment') }}
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('confirm_pay') }}">
+                        <form method="POST" action="{{ route('confirm_payment') }}">
                             @csrf
                             <div class="form-group row">
-                                <label for="transactionID" class="col-md-4 col-form-label text-md-right">{{ __('transactionID') }}</label>
+                                <label for="transactionID" class="col-md-4 col-form-label text-md-right">
+                                    {{ __('transactionID') }}</label>
                                 <div class="col-md-6">
-                                    <input id="transactionID" type="text" class="form-control" name="transactionID" required value="PFI39WSTFP">
+                                    <input id="transactionID" type="text" class="form-control" name="transactionID"
+                                           required>
                                 </div>
                             </div>
                             <div class="form-group row mb-0">

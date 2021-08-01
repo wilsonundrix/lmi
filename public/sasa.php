@@ -1,4 +1,7 @@
 <?php
+
+use App\Models\MpesaTransaction;
+
 echo "haha";
         $callBackJSONData = file_get_contents("php://input");
 

@@ -4,10 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\MpesaTransaction;
 use App\Models\StkPush;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Http\Response;
 
 class MpesaController extends Controller
 {
@@ -42,29 +41,27 @@ class MpesaController extends Controller
         return $json_response->access_token;
     }
 
-
-
-    public function stkPush(Request $request)
+    public function stkPush(Request $request): RedirectResponse
     {
         $url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest";
 
-        $amount = $request->amount;
-        $phone = $request->phoneNumber;
+        $amount = $request->input('amount');
+        $phone = $request->input('phoneNumber');
         $formattedPhone = substr($phone, 1);
         $code = "254";
         $phoneNumber = $code . $formattedPhone;
+        $timeStamp = Carbon::rawParse('now')->format('YmdHms');
 
         $curl_post_data = [
             'BusinessShortCode' => 174379,
             'Password' => $this->lipaNaMpesaPassword(),
-            'Timestamp' => Carbon::rawParse('now')->format('YmdHms'),
+            'Timestamp' => $timeStamp,
             'TransactionType' => 'CustomerPayBillOnline',
             'Amount' => $amount,
             'PartyA' => $phoneNumber,
             'PartyB' => 174379,
             'PhoneNumber' => $phoneNumber,
-//            'CallBackURL' => "https://modernwheels.co.ke/dollar/stk/",              //api/stk/push/callback/url
-            'CallBackURL' => route('mpesa-res'),              //api/stk/push/callback/url
+            'CallBackURL' => "https://modernwheels.co.ke/dollar/stk/",              //api/stk/push/callback/url
             'AccountReference' => 'Ndunya Payment',
             'TransactionDesc' => 'lollipop'
         ];
@@ -74,53 +71,124 @@ class MpesaController extends Controller
         curl_setopt($curl, CURLOPT_URL, $url);
         curl_setopt($curl, CURLOPT_HTTPHEADER, array("Content-Type:application/json", "Authorization: Bearer " . $this->newAccessToken()));
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-//        curl_setopt($curl, CURLOPT_HEADER, false);
+        curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $dataString);
 
         $curl_response = curl_exec($curl);
+//        echo $curl_response;
 
-        return $curl_response;
-        // return redirect()->route('mpesa-res');
+        $jsonResponse = json_decode($curl_response);
+
+        $newStkPush = new StkPush();
+        $newStkPush['merchantRequestID'] = $jsonResponse->MerchantRequestID;
+        $newStkPush['checkoutRequestID'] = $jsonResponse->CheckoutRequestID;
+        $newStkPush['responseCode'] = $jsonResponse->ResponseCode;
+        $newStkPush['responseDescription'] = $jsonResponse->ResponseDescription;
+        $newStkPush['customerMessage'] = $jsonResponse->CustomerMessage;
+        $newStkPush['phoneNumber'] = $phoneNumber;
+        $newStkPush['amount'] = $amount;
+        $newStkPush['transactionDate'] = $timeStamp;
+
+        $newStkPush->save();
+
+        return redirect()->route('confirm-page');
     }
 
-
-    public function mpesaRes()
+    public function stkResponse()
     {
-        echo "haha";
+        $data = file_get_contents('php://input');
+        $decoded_data = json_decode($data, true);
+        $res = $decoded_data['Body']['stkCallback'];
+
+        if ($res['ResultCode'] == 0) {
+
+            $amount = $res['CallbackMetadata']['Item'][0]['Value'];
+            $phoneNumber = $res['CallbackMetadata']['Item'][4]['Value'];
+            $transactionDate = $res['CallbackMetadata']['Item'][3]['Value'];
+            $mpesaReceiptNumber = $res['CallbackMetadata']['Item'][1]['Value'];
+            $merchantRequestID = $res["MerchantRequestID"];
+            $checkoutRequestID = $res["CheckoutRequestID"];
+            $resultCode = $res["ResultCode"];
+
+            $handle = fopen('stk_response.txt', 'w');
+            fwrite($handle, "$data\n");
+            fwrite($handle, "Amount : $amount\n");
+            fwrite($handle, "MpesaReceiptNumber : $mpesaReceiptNumber\n");
+            fwrite($handle, "TransactionDate : $transactionDate\n");
+            fwrite($handle, "PhoneNumber : $phoneNumber\n");
+            fwrite($handle, "MerchantRequestID : $merchantRequestID\n");
+            fwrite($handle, "CheckoutRequestID : $checkoutRequestID\n");
+            fwrite($handle, "ResultCode : $resultCode\n");
+            fclose($handle);
+
+            $con = mysqli_connect("localhost", "modernwh_dmungai", "mendoza10095", "modernwh_cars_database");
+            if (!$con) {
+                die("Connection failed: " . mysqli_connect_error());
+            }
+
+            $sql = "INSERT INTO `stk_transactions`(`merchantRequestID`, `checkoutRequestID`, `amount`, `mpesaReceiptNumber`, `transactionDate`, `phoneNumber`) VALUES (
+                                            '$merchantRequestID','$checkoutRequestID','$amount','$mpesaReceiptNumber','$transactionDate','$phoneNumber')";
+
+            if (!mysqli_query($con, $sql)) {
+                echo mysqli_error($con);
+            }
+            mysqli_close($con);
+        } else {
+            $handle = fopen('err_stk_response.txt', 'a');
+            fwrite($handle, "$data\n");
+            fclose($handle);
+        }
+    }
+
+    public function c2bResponse()
+    {
+        $expectedAmount = 1000;
         $callBackJSONData = file_get_contents("php://input");
 
-        $logFile = "STKPush.json";
+        $logFile = "STKPushResponse.log";
         $log = fopen($logFile, "a");
         fwrite($log, $callBackJSONData);
+        fwrite($log,"stk end");
         fclose($log);
 
         $callBackData = json_decode($callBackJSONData);
+        if ($callBackData->amount = $expectedAmount) {
+            $response = array(
+                "ResultCode" => 0,
+                "ResultDesc" => "Accepted"
+            );
 
-       $trx = new MpesaTransaction();
-       $trx->TransactionType = $callBackData->TransactionType;
-       $trx->TransID = $callBackData->TransID;
-       $trx->TransTime = $callBackData->TransTime;
-       $trx->TransAmount = $callBackData->TransAmount;
-       $trx->BusinessShortCode = $callBackData->BusinessShortCode;
-       $trx->BillRefNumber = $callBackData->BillRefNumber;
-       $trx->InvoiceNumber = $callBackData->InvoiceNumber;
-       $trx->OrgAccountBalance = $callBackData->OrgAccountBalance;
-       $trx->ThirdPartyTransID = $callBackData->ThirdPartyTransID;
-       $trx->MSISDN = $callBackData->MSISDN;
-       $trx->FirstName = $callBackData->FirstName;
-       $trx->MiddleName = $callBackData->MiddleName;
-       $trx->LastName = $callBackData->LastName;
-       $trx->response = json_encode($callBackData);
-       $trx->status = 'pending';
-       $trx->response = json_encode($callBackData);
-//        $transaction->response = "Crazy Ass";
-       $trx->save();
-
-        echo "Sasa na sasa";
+            $trx = new MpesaTransaction();
+            $trx['FirstName'] = $callBackData->FirstName;
+            $trx['MiddleName'] = $callBackData->MiddleName;
+            $trx['LastName'] = $callBackData->LastName;
+            $trx['TransactionType'] = $callBackData->TransactionType;
+            $trx['TransID'] = $callBackData->TransID;
+            $trx['TransTime'] = $callBackData->TransTime;
+            $trx['TransAmount'] = $callBackData->TransAmount;
+            $trx['BusinessShortCode'] = $callBackData->BusinessShortCode;
+            $trx['BillRefNumber'] = $callBackData->BillRefNumber;
+            $trx['InvoiceNumber'] = $callBackData->InvoiceNumber;
+            $trx['OrgAccountBalance'] = $callBackData->OrgAccountBalance;
+            $trx['ThirdPartyTransID'] = $callBackData->ThirdPartyTransID;
+            $trx['MSISDN'] = $callBackData->MSISDN;
+//        $trx['response'] = json_encode($callBackData);
+//        $trx['status'] = 'pending';
+//        $trx['response'] = json_encode($callBackData);
+//        $transaction['response'] = "Crazy Ass";
+            $trx->save();
+        } else {
+//            Reject the transaction
+            $response = array(
+                "ResultCode" => 25,
+                "ResultDesc" => "Rejected"
+            );
+        }
+        echo $response;
     }
 
-    public function confirm(Request $request)
+    public function c2bConfirm(Request $request)
     {
 //        dd($request);
         $transId = $request->get('transactionID');
@@ -133,5 +201,23 @@ class MpesaController extends Controller
             echo "Nan kwa db !!!!!!!!!!!!";
         }
 
+    }
+
+    public function mpesaRegisterUrls()
+    {
+        $curl = curl_init();
+        curl_setopt($curl, CURLOPT_URL, 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl');
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json','Authorization: Bearer '. $this->generateAccessToken()));
+
+        curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curl, CURLOPT_POST, true);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode(array(
+            'ShortCode' => 600988,
+            'ResponseType' => 0,
+            'ConfirmationURL' => 'https://www.modernwheels.co.ke/dollar/confirmation/',
+            'ValidationURL' => 'https://www.modernwheels.co.ke/dollar/validation/'
+        )));
+        $curl_response = curl_exec($curl);
+        echo $curl_response;
     }
 }

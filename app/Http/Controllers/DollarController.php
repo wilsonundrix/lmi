@@ -3,51 +3,51 @@
 namespace App\Http\Controllers;
 
 use App\Models\MpesaTransaction;
+use App\Models\StkPush;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
 class DollarController extends Controller
 {
-
-    public $theToken = "";
     /**
      * Lipa na M-PESA password
      * */
-
     public function lipaNaMpesaPassword(): string
     {
         $lipa_time = Carbon::rawParse('now')->format('YmdHms');
         $passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919";
         $BusinessShortCode = 174379;
-        $timestamp =$lipa_time;
-        return base64_encode($BusinessShortCode.$passkey.$timestamp);
+        $timestamp = $lipa_time;
+        return base64_encode($BusinessShortCode . $passkey . $timestamp);
     }
 
     /**
      * Lipa na M-PESA STK Push method
      * */
-
     public function customerMpesaSTKPush()
     {
         $url = 'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest';
 
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json','Authorization:Bearer '.$this->generateAccessToken()));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization:Bearer ' . $this->generateAccessToken()));
 
+        $phoneNumber = '254716729060';
+        $amount = 1;
+        $timeStamp = Carbon::rawParse('now')->format('YmdHms');
 
         $curl_post_data = [
             //Fill in the request parameters with valid values
             'BusinessShortCode' => 174379,
             'Password' => $this->lipaNaMpesaPassword(),
-            'Timestamp' => Carbon::rawParse('now')->format('YmdHms'),
+            'Timestamp' => $timeStamp,
             'TransactionType' => 'CustomerPayBillOnline',
-            'Amount' => 1,
+            'Amount' => $amount,
             'PartyA' => 254716729060, // replace this with your phone number
             'PartyB' => 174379,
             'PhoneNumber' => 254716729060, // replace this with your phone number
-            'CallBackURL' => 'https://modernwheels.co.ke/dollar/stk/',
+            'CallBackURL' => "https://modernwheels.co.ke/dollar/stk/",
             'AccountReference' => "STK tutorial",
             'TransactionDesc' => "Testing stk push on sandbox"
         ];
@@ -58,25 +58,44 @@ class DollarController extends Controller
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data_string);
 
-        return curl_exec($curl);
+        $curl_response = curl_exec($curl);
+//        echo $curl_response;
+
+        $jsonResponse = json_decode($curl_response);
+
+        $newStkPush = new StkPush();
+        $newStkPush['merchantRequestID'] = $jsonResponse->MerchantRequestID;
+        $newStkPush['checkoutRequestID'] = $jsonResponse->CheckoutRequestID;
+        $newStkPush['responseCode'] = $jsonResponse->ResponseCode;
+        $newStkPush['responseDescription'] = $jsonResponse->ResponseDescription;
+        $newStkPush['customerMessage'] = $jsonResponse->CustomerMessage;
+        $newStkPush['phoneNumber'] = $phoneNumber;
+        $newStkPush['amount'] = $amount;
+        $newStkPush['transactionDate'] = $timeStamp;
+
+        $newStkPush->save();
+        return $curl_response;
     }
 
+    /**
+     * Generate New Access Token*
+     */
     public function generateAccessToken()
     {
-        $consumer_key="2gT4rlPQwKaVUknAqLmh8BwoIBzpFd6d";
-        $consumer_secret="o5puyXpgEIWK0UDv";
-        $credentials = base64_encode($consumer_key.":".$consumer_secret);
+        $consumer_key = "2gT4rlPQwKaVUknAqLmh8BwoIBzpFd6d";
+        $consumer_secret = "o5puyXpgEIWK0UDv";
+        $credentials = base64_encode($consumer_key . ":" . $consumer_secret);
 
         $url = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials";
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, $url);
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Basic ".$credentials));
-        curl_setopt($curl, CURLOPT_HEADER,false);
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array("Authorization: Basic " . $credentials));
+        curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
 
         $curl_response = curl_exec($curl);
-        $json_token=json_decode($curl_response);
+        $json_token = json_decode($curl_response);
 
         $this->theToken = $json_token->access_token;
         return $json_token->access_token;
@@ -87,9 +106,9 @@ class DollarController extends Controller
      */
     public function createValidationResponse($result_code, $result_description): Response
     {
-        $result=json_encode(["ResultCode"=>$result_code, "ResultDesc"=>$result_description]);
+        $result = json_encode(["ResultCode" => $result_code, "ResultDesc" => $result_description]);
         $response = new Response();
-        $response->headers->set("Content-Type","application/json; charset=utf-8");
+        $response->headers->set("Content-Type", "application/json; charset=utf-8");
         $response->setContent($result);
         return $response;
     }
@@ -110,7 +129,7 @@ class DollarController extends Controller
      */
     public function mpesaConfirmation(Request $request): Response
     {
-        $content=json_decode($request->getContent());
+        $content = json_decode($request->getContent());
 
         $mpesa_transaction = new MpesaTransaction();
         $mpesa_transaction['FirstName'] = $content->FirstName;
@@ -128,12 +147,10 @@ class DollarController extends Controller
         $mpesa_transaction['OrgAccountBalance'] = $content->OrgAccountBalance;
         $mpesa_transaction->save();
 
-
         // Responding to the confirmation request
         $response = new Response();
-        $response->headers->set("Content-Type","text/xml; charset=utf-8");
-        $response->setContent(json_encode(["C2BPaymentConfirmationResult"=>"Success"]));
-
+        $response->headers->set("Content-Type", "text/xml; charset=utf-8");
+        $response->setContent(json_encode(["C2BPaymentConfirmationResult" => "Success"]));
 
         return $response;
     }
@@ -145,7 +162,7 @@ class DollarController extends Controller
     {
         $curl = curl_init();
         curl_setopt($curl, CURLOPT_URL, 'https://sandbox.safaricom.co.ke/mpesa/c2b/v1/registerurl');
-        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json','Authorization: Bearer '. $this->generateAccessToken()));
+        curl_setopt($curl, CURLOPT_HTTPHEADER, array('Content-Type:application/json', 'Authorization: Bearer ' . $this->generateAccessToken()));
 
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_POST, true);
@@ -158,5 +175,4 @@ class DollarController extends Controller
         $curl_response = curl_exec($curl);
         echo $curl_response;
     }
-
 }
